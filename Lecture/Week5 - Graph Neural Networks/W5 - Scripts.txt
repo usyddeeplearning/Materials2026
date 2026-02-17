@@ -1,0 +1,154 @@
+- W5 Graph Convolutional Networks
+* This informal script is to give you a quick overview of the slides. 
+* If you need a more precise and formal explanation of relevant techniques, please refer to the deep learning text book, Goodfellow I J, Bengio Y, Courville A, Deep Learning. MIT Press, 2016.
+
+P2
+Euclidean data has long been the mainstream data structure in deep learning research
+However, lots of data do not ‘live’ on grids.
+
+P3
+Graph data (aka relational data) refers to a set of objects (graph nodes) connected by relationship (graph edges) between them.
+Graph data is pervasive in all kinds of areas, ranging from social networks, knowledge graphs, chemical molecules, scene graphs and so on. 
+Graph data is much more common than the Euclidean data such as images that has been 
+Due to the drastic domain difference from grid data (varying number of neighbours, no natural ordering on the nodes, etc), standard deep learning architectures like CNNs and RNNs do not work on graph data. 
+
+P4
+For example, CNN on images with fixed size kernel and fixed number of weights in the kernel requires the number of neighboring pixels to be a fixed number as well as the implicit ordering on the pixels
+
+P5
+While on graph data, these properties do not exist
+Thus, we need a new approach for processing graph data
+
+P6
+From a high-level perspective, it looks very similar with the convolutional neural network. There are input layer, output layer, and many hidden layers between the input and the output. 
+
+P7
+A graph consists of the nodes and edges. In this right figure, we have a graph with 5 nodes and connections between each other.
+
+P8
+We have different ways to represent edges, including Edge list, Adjacency matrix, and Incidence matrix.
+Edge list simply lists all edges.
+
+P9
+The element in an adjacency matrix stands for the connection between two nodes. Its value can be one or zero. Obviously, if the value is one, there is a connection between the corresponding two nodes.
+
+P10
+We can also include the self connections into the adjacency matrix. The diagonal elements in the matrix are all 1. This thus indicates the self connection. 
+
+P11
+We can also assign different weight to the edges. That is to say, the elements in the adjacency matrix may not always be 1 or 0. For example, they can be of some certain continuous values to reflect different importance of the edges. 
+
+P12
+Degree matrix recodes the degree of each node. The degree of a node is the number of edges connected to the node. This degree matrix is a diagonal matrix, as we only need to count the number of connections.
+
+P13
+In different applications, we may have the dense graph or sparse graph.
+
+P14
+We have talked about the undirected graph, where no direction is emphasized for edges. There are also directed graphs, where each age has a direction. 
+
+P15
+Adjacency matrix of directed graph could be asymmetric now. For example, we have a connection from node b to node a, but it does not mean there is a connection from node a to node b. 
+
+P16
+A subgraph in which any two nodes are connected to each other by paths, as shown in the bottom figure.
+
+P17
+This is a table to summarize the common notations about graphs. 
+
+P18
+Before we move on to GCNs, let’s first recap the convolutional neural networks.
+This is a single convolutional layer with a 3x3 filter. In the convolution, we need to slide the filter over the input feature map. Each time, we will do a weighted summarization, like the below equation.
+
+P19
+Here is the formula for the graph convolution. \hat{D} is the degree matrix calculated from the adjacency matrix with self-connections (\hat{A}). H^l is the feature map on the l-th hidden layer, and W^l is the weight matrix or the filter.
+
+P20
+Why we are able to define the graph convolution in this equation?
+
+P21
+We first have a spatial perspective to illustrate the definition of graph convolution. 
+
+We can explicitly split the calculation into two parts. hi is the i-th node in this graph. Ni denotes the neighboring node set for the i-th node.
+For the i-th node itself, we include a matrix W_0 to transform its feature hi. Also, there is another matrix W_1 to transform the features of its neighboring nodes, i.e., hj with h\in Ni.
+
+The overall calculation could be very straightforward. You only need to introduce a weight matrix W_0 to process the node itself, and then introduce the other matrix W_1 to transform its neighboring nodes. After that, we do the summarization and apply the sigmoid activation function. 
+W_1 is shared by all neighboring nodes, which is kind of weight sharing scheme in GCN. By doing so, the calculation is invariant to the permutations of nodes. Linear complexity O(E).
+Here exist two different paradigms for learning on graphs, transductive and inductive. In transductive learning, the nodes and edges remain constant across the training and prediction phases. In other words, at training time, the learning algorithm has access to all the nodes and edges including those for which predictions are to be made. Note that transductive paradigm does not 
+Inductive learning is that the model is first trained on a set of graphs and then applied to a separate set of graphs.
+
+There are also limitations. This kind of convolution may not be very effective to aggregate the information. So it may be very hard to develop very deep GCNs.
+And another limitation is that there is no direct use of the edge feature. You can see in the definition of the calculation, we only use the features of the graph nodes.
+
+P22
+To show how the multiplication between A and H conduct neighborhood aggregation, we give a specific illustration here.
+
+P23
+Self-loops are added into adjacency matrix, so that central nodes are included in convolution.
+
+P24
+Observe that the weights (the values) in each row of the adjacency matrix have been divided by the degree of the node corresponding to the row. We apply the propagation rule with the transformed adjacency matrix and get node representations corresponding to the mean of the features of neighboring nodes. 
+This is because the weights in the (transformed) adjacency matrix correspond to weights in a weighted sum of the neighboring nodes’ features.
+
+P25
+In practice, dynamics get more interesting when we use a symmetric normalization
+
+P26
+Given this symmetric normalization, we can do some further analysis. 
+From this bottom conclusion, we can find that the normalized graph convolution actually investigates \hat{D}_ii and \hat{D}_jj, which are the degrees of the two nodes i and j, respectively. 
+We are now considering the convolution for node i. If there are many connections with the node j (i.e., Djj is larger), its influence on the transformation of xi will be decreased.
+
+P27
+We may then have different kinds of prediction tasks. For example, the node classification to predict the property of each graph node. For each graph node, we have a vector representation for it, and then we can apply a softmax operation. 
+If we want to make the classification over the entire graph, we need a graph level representation. We simply merge all the information of the graph nodes together. After that, you can have a unified representation for that graph.
+In some case, we may also have interest in link prediction. We simply take the dot product between  two nodes as the feature of the edge between them. 
+
+P28
+The second part is to illustrate the graph convolution from the spectral perspective. B
+
+P29
+Before the illustration of this spectral approach, we first have a definition of the graph Laplacian L. L=D-A, where D is the degree matrix and A is the adjacency matrix. There is also a normalized one L'. 
+
+P30
+In signal processing, there is a very famous convolution theorem - Under suitable conditions, the Fourier (Laplace)  transform of a convolution of two signals is the pointwise product of their Fourier (Laplace) transforms.
+So formally, we can express this convolution theorem with the below equation. 
+f and h are the graph and the filter respectively. We take them as two signals. The convolution of these two signals can be written as the left hand of this equation. 
+At the right hand of this equation, there are Fourier transforms of these two signals, i.e., \hat{f} and \hat{h}. According to the above convolution theorem, if we consider an inverse Fourier transformation, we can then easily achieve the below equation.
+
+P31
+When we are dealing with a space, we need to define its basis. In this frequency domain, the basis can be defined through complex-valued functions, e^{2\pi i \xi t}. Given a series of complex exponentials as the basis for the frequency domain, we can write out the expression of f in the above equation. 
+We have an important conclusion that this complex exponentials are actually the eigenvector of 1-d Laplace operator.
+Recall that we have defined a laplacian matrix L before. This laplacian matrix is defined over the graph data. We can do the eigen decomposition for this laplacian matrix L, and then we get the eigenvector \mu, and the eigenvalue \lambda.
+
+P32
+As what we have introduced that u plays a similar role as the complex exponentials in the top formula, the Fourier transform of signal f can then be written as \hat{f}= U^{T} f. Also, we can have  \hat{h}= U^{T} h for signal h. 
+Recall that U is composed of eigenvector, and thus it is a orthogonal matrix. Given \hat{f}= U^{T} f, we can get f = U\hat{f}.
+
+P33
+Now we have known the basic operations in the frequency domain for the signals. We can write out the bottom equation for the graph convolution between f and h.
+
+P34
+f is the convolution filter. If we re-organize f into a diagonal matrix g_{\theta}, we can rewrite the top equation into UgU^{T}x.  
+We need to calculate U matrix through the eigen decomposition of laplacian matrix L. 
+You can see we need to optimize n parameters in this diagonal matrix, and n is the number of graph nodes. If if the graph is very large, the complexity will be higher. 
+
+P35
+We do not want eigen decomposition, as it is computational expensive. Also, we want to have some spatial localization of the graph nodes in the convolution, and want to decrease the number of parameters to optimize. 
+Instead of directly optimizing theta, we assume theta can be written as a combination of eigen values, and then we only need to optimize the combination coefficients alpha. 
+So we can rewrite g_theta, and derive a simplified calculation of Ug_{theta}U^{t} as the right side, where we only need to deal with the input laplacian matrix L.
+Also, the number of combination coefficient k should be smaller than n, and then the optimization burden can be reduced.
+
+P36
+A summary of the advantages we can achieve with this algorithm improvement.
+We can derive different receptive fields
+
+P37
+For example, k=0, we only consider the self connection. When k=1, we consider L and the underlying first-order connection. When K=2, second-order relationship between nodes will be investigated.
+
+P38 
+We may also have another way to modify the expression of matrix g_theta. 
+In the Chebyshev expansion here, we scale the eigen value, as the input needs to be between -1 and 1. 
+Also, the final conclusion is irrelevant to eigen decomposition.
+
+P39
+Considering the diagonal entry, the coefficient before beta_1 is small. Thus, more information shall come from the central node itself in the convolution. 

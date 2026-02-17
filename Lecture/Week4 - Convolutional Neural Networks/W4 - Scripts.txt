@@ -1,0 +1,300 @@
+
+Week 4 - Convolutional Neural Networks
+
+* This informal script is to give you a quick overview of the slides. 
+* If you need a more precise and formal explanation of relevant techniques, please refer to the deep learning text book, Goodfellow I J, Bengio Y, Courville A, Deep Learning. MIT Press, 2016.
+
+#-----------------------------------------
+CNN Part I - CNN Basics
+#-----------------------------------------
+
+P2
+This lecture is divided into two parts. Part I we will introduce the basics of CNN, how it works and why it works. New concepts include convolution, receptive field and pooling. CNN also allows neural networks to learn simple patterns first and increasingly complex patterns later, layer by layer. And this is what we mean by hierarchical features, and also one of the reasons why CNN works so well. Part II we will move through the evolution of CNN architectures, and learn about the problems we encounter along the way and how we solve them with new design ideas.
+
+P3
+We have a brief review of the history of CNN. The concept of convolution could be first found from this classical model - Neocognitron developed in 1980. Though it is quite classical, we are impressed by its insightful design. For example, a number of layers have been integrated in this network for feature extraction. 
+There are two important categories of neurons in the neural network: S-cells and C-cells. The local features are extracted by S-cells, and these features' deformation, such as local shifts, are tolerated by C-cells. Local features in the input are integrated gradually and classified in the higher layers.
+The simple cells activate, for example, when they identify basic shapes as lines in a fixed area and a specific angle. The complex cells have larger receptive fields and their output is not sensitive to the specific position in the field. The complex cells continue to respond to a certain stimulus, even though its absolute position on the retina changes. Complex refers to more flexible, in this case.
+
+P4
+After that, we have a much more modern neural network developed by LuCun in 1998. In this LeNet, we can already find those popular component design, like the convolution layer, the pooling layer and the fully connected layer. At the end of LeNet, there is Gaussian connection layer. It is a layer that uses euclidian radial basis functions for each class to estimate the lack of fit between the input pattern and a model of the class associated with the RBF. This is a measure of cost. But these days, it is common to use a measure cross_entropy which mostly achieves the same thing more efficiently 
+
+P5
+The performance of LeNet is not good enough, especially compared with other kinds of machine learning methods, like  support vector machine. You can find there is a significant performance gap on this MNIST dataset.
+
+P6
+In 2012, AlexNet was developed. It could be the first very successful deep neural networks in history. It leads to a significant improvement on the image classification task. Imagenet dataset is much bigger than the MNIST dataset, and it is a benchmark dataset in the computer vision field. The network achieved a top-5 error of 15.3%, more than 10.8 percentage points ahead of the runner up. The runner up still used human crafted features and used classical machine learning classifier to complete the image classification on imagenet dataset.
+AlexNet can already be taken as a deep neural network, as it has 5 convolutional layers and 3 fully connected layers, which we cannot imagine before. The success of AlexNet comes from the use of the large scale imagenet dataset and the gpu for the training of neural network. Also, there are some new technical things, like the use of the rule as activation function and drop out as the regularization. So all these together have established the success of AlexNet. The bottom is a figure of AlexNet. 
+
+P7
+CNN is very popular. It has been widely used to process the vision data in various tasks, such as image classification, image segmentation, pose estimation, style transfer, etc. 
+
+P9
+In general, CNN consists of Convolutional Layer, Pooling layer and Fully-connected Layer.
+
+P10
+The convolution is performed on the input data with the use of a filter or kernel (these terms are used interchangeably) to then produce a feature map.
+
+P11
+Let's look into the calculation of this convolution. For the input image on the left, the convolution operation is quite straightforward, and you only need to conduct the element wise multiplication. We execute a convolution by sliding the filter over the input. At every location, a matrix multiplication is performed and sums the result onto the feature map.
+
+P12-P15
+You can see the convolution operation. The filter (the pink square) is sliding over our input (the blue square) and the sum of the convolution goes into the feature map (the yellow square).
+
+P16
+Stride is the size of the step the convolution filter moves each time. A stride size is usually 1, meaning the filter slides pixel by pixel. By increasing the stride size, your filter is sliding over the input with a larger interval and thus has less overlap between the cells.
+
+P17
+A larger stride size leads to fewer applications of the filter and a smaller output size. 
+
+P18
+Applying a 3×3 filter at the center of the matrix works fine, but what about the edges? How would you apply the filter to the first element of a matrix that doesn’t have any neighboring elements to the top and left? You can use zero-padding. All elements that would fall outside of the matrix are taken to be zero. By doing this you can apply the filter to every element of your input matrix, and get a larger or equally sized output.
+
+P19
+Here we have a measure of the output size. N is the size of the input matrix. P is the padding size. K is the size of the convolutional filter. S is the stride.
+
+P20
+We can use more than one convolutional filter to extract the feature from the input. Like in the middle, we have four pink matrices that stand for four different convolutional filters of different weights. 
+
+P21-P23
+For the first filter, you can get a feature map on the top right.  For the second filter, you can also get a corresponding feature map on the bottom right. For this second filter, the calculation process is the same as before. 
+
+P24
+Above, we have only considered a 2D image as input. When the input has depth (e.g. RGB images), the 
+convolution should become a 3 dimensional calculation.  Besides the w and h to define the two dimensions of the image, you also have a third dimension that is defined as the depth  of the input signal for this rgb image. 
+Obviously, in the bottom example, d should be 3, if we consider an rgb image that has three channels. For this 3D tensor input, the convolution filter in the middle shall be of 3 dimensions as well. Here the depth of the convolution filter is D1, which is exactly the same as the depth value of the input matrix. 
+
+P25-P31
+Now we have an example to illustrate the convolution for this three dimensional input. Here we have three channels for the input, and the filter w0 also has three channels. For each channel, we  directly conduct the element wise multiplication between the input and the weight, and then we can summarize the results calculated over these three channels to get a single output value. For the second filter w1, we can repeat a similar process to get a corresponding feature map output. 
+
+P32
+Though there is a separate depth dimension here, we still follow  a similar way as before to calculate the output size.
+
+P33
+The convolution can be written in terms as the matrix operation. For the input signal x, we can write out a matrix c.  You may find that in matrix C, its elements are all from the original 3 × 3 input feature map. With this re-formulation of the convolution, we can directly rely on the matrix multiplication to calculate the output of the convolution.
+
+P34
+This is very helpful reformulation.  When we optimize the parameters in this convolutional filter, we need to apply the back propagation and calculate the gradient. Given this matrix operation, you can easily calculate the gradient with respect to the weights in this convolutional filter. We can thens simply follow the previously introduced back propagation process to calculate the gradient from the lose function to the weight. 
+
+P35
+This is a toy example from the pytorch documentation. In the definition of this neural network, we have used the convolutional layer, dropout and fully connected layer. If you want more detailed explanation about these functions, you can click these links to read more. 
+
+P36
+Here is convolution for the two dimensional data.
+In the definition of this convolution function, there are some important variables to be determined, e.g., the input and output numbers of channels, kernel size, the stride, the padding, the dilation, the group are the bias.
+The following equation is to introduce a general convolution process. This is a kind of weighted summarization over the input signal.
+
+P38
+The receptive field in Convolutional Neural Networks (CNN) is the region of the input space that affects a particular unit of the network.Here are two ways to visualize CNN feature maps. In all cases, we uses the convolution with kernel size k = 3x3, padding size p = 1x1, stride s = 2x2. 
+(Top row) Applying the convolution on a 5x5 input map to produce the 3x3 green feature map. 
+(Bottom row) Applying the same convolution on top of the green feature map to produce the 2x2 orange feature map. 
+(Left column) The common way to visualize a CNN feature map. Only looking at the feature map, we do not know where a feature is looking at (the center location of its receptive field) and how big is that region (its receptive field size). It will be impossible to keep track of the receptive field information in a deep CNN.
+
+P39
+(Right column) The fixed-sized CNN feature map visualization, where the size of each feature map is fixed, and the feature is located at the center of its receptive field.
+
+P40
+Recall the definition of the convolution function in pytorch. We have introduced the stride and the padding. Next, let's talk about the dilation. 
+
+P41
+In simple terms, dilated convolution is just a convolution applied to input with defined gaps. The gap is defined in the space of the convolutional filter. The default value for the dilation is set as 1. If the dilation value is 1, then you just do an ordinary convolution, but for the dilation value larger than 1, like 2 or 3 in the bottom figure, we need to skip some particular number of pixels at the input.
+The receptive filed grows exponentially while the number of parameters grows linearly.
+
+P43
+A key aspect of Convolutional Neural Networks are pooling layers, typically applied after the convolutional layers. Pooling layers subsample their input. The most common way to do pooling it to apply a  operation to the result of each filter. For example, the following shows max pooling for a 2×2 window.
+
+P44
+In image recognition, pooling also provides basic invariance to translating (shifting) and rotation. When you are pooling over a region, the output will stay approximately the same even if you shift/rotate the image by a few pixels, because the max operations will pick out the same value regardless.
+Pooling thus keeps the most salient information. You can think of each filter as detecting a specific feature, such as detecting if the image contains a pattern. If this pattern occurs somewhere in the image, the result of applying the filter to that region will yield a large value, but a small value in other regions. By performing the max operation you  are keeping information about whether or not the feature appeared in the image, but you are losing information about where exactly it appeared. 
+
+P45
+One property of pooling is that it provides a fixed size output matrix, which typically is required for classification. This allows you to use variable size image, and variable size filters, but always get the same output dimensions to feed into a classifier.
+
+P46-P47
+Besides the max pooling, we can have other types of pooling. For example, the average pooling and L2 norm pooling.
+
+P48
+More generally, we can consider the lp norm. There is mixed pooling as a combination of the max pooling and the average pooling. Also the stochastic pooling and spectral pooling. 
+
+P50
+Why we a convolution neural network is effective? We first consider the fully connected neural network. Here is an image of 1,000 x 1,000 size. Considering a single hidden neuron in the hidden layer, we need 1 million parameter to connect all 1,000 x 1,000 pixels in the input image. Such a large number of parameters will definitely be burden for the optimization. 
+
+P51
+How about a locally connected neural net, where a hidden unit is only connected to a local patch.
+Each hidden neuron will only be connected with 10 by 10 region in the input. So somehow, we can save the number of parameters in the neural network.
+
+P52
+This kind of locally connected neural network may have some problem. The learned filter is a spatially local pattern. A hidden node at a higher layer has a larger receptive field in the input. Stacking many such layers leads to “filters”(not anymore linear) which become increasingly “global”
+ 
+P53
+Now we come to the convolution operation. The important idea here is the shared weights. So for this large input image, you only need to use a single filter to process all the pixels. You simply slide this filter on the input image. All pixels share the same weights. Given this nice idea of the shared weights, we can save lots of parameters in the calculation.
+
+P54
+Multiple filters provide the probability of detecting the spatial  distributions of multiple visual patterns. One filter can build a feature map, multiple filters will build a stack.
+
+P55
+We can design filters to process the input images. For example on top right, we can detect the edges on the image with the specially designed filter. These different designs of the convolutional filters can help us to attracts different information from the image. These filters are hand crafted, but in practice for the neural network, we can optimize the weight in these convolutional filters extract the features that are useful for your own task. 
+
+P57
+Next, we want to have a visualization over the features extracted by the CNN. Here we take AlexNet as an example. We want to show what happens inside this neural network and what kind of features have been attracted on these different layers.
+
+P58
+In the lower level layers of the neural network, we often extract the low level features, which do not have specific semantic meanings. Along with the increase of the depth in neural network, we gradually find features of more semantic meanings. The high level abstract features extracted on the last several layers of the neural network could help us to understand the images and then complete the image classification task. 
+
+#-----------------------------------------
+CNN Part II - Neural Network Architectures
+#-----------------------------------------
+
+P61
+In this classical LeNet architecture, you can find there are convolutional filters, pooling layers and fully connected layers, which are the basic components we also use widely today. 
+
+P62
+Next, we have Alexnet in 2012. The winner on imagenet challenge was alexnet in 2012, which achived an error of 16.4%, while  second winner has a bigger error of 26.2%. That is a big performance jump brought by deep learning. 
+
+P63
+In this AlexNet design, we used ReLU activation function. Data augmentation has been explored to enrich the training data set, and we have the dropout for the regulation. At that time, AlexNet used the local response normalization to normalize the feature map, and overlapping pooling. 
+Note that at the very beginning layers of the Alext net, 11x11 convolutional filters have been used.
+
+P64
+Now we give more details about these components. We use the rule here. You may still remember the analysis of rule in our previous classes. The equation of rule is very simple, and it is very easy for us to do the feed forward process. The gradient calculation is also very simple, so the back propagation process could be very efficient.  Different from the sigmoid activation function, relu will not have the gradient saturation problem. Also, relu can lead to a sparse feature map with many zero elements, which accelerates the following calculation. But at the same time, there is a dead relu issue.
+
+P65
+We can use different image processing techniques to generate the copies of the input image. Looking at this figure, we can generate a lot of augmented views of this object, but they all share the same semantic meaning (label). 
+
+P66
+Dropout is a specially designed regularization method  for the deep neural network. Dropout is a technique which deal with overfitting by combining the predictions of many different large neural nets at test time.
+
+P67
+Next, the local response normalization. We did not use this type of normalization a lot today, as we have other more advanced techniques. But during the development of alexnet, this normalization has been found to be helpful. 
+Given an element in this feature map, we want to normalize its value by using its neighboring elements. In this equation, for the element ax,y, we investigate its neighboring elements within the range of (-n/2, n/2) in the channel dimension, which defines a local region for this ax,y.
+We want to detect high frequency features with a large response. If we normalize around the local neighborhood of the excited neuron, it becomes even more sensitive as compared to its neighbors.
+
+P68
+We know the max pooling and average pooling in our previous classes, where we often set the pooling stride to be the same as the pooling kernel size.
+In AlexNet, the pooling stride has been set to be smaller than pooling kernel size, which leads to an overlapping pooling. With the overlapping pooling, we may reduce the information lose in the pooling operation, which slightly helps the final network performance.
+
+P69
+The development of AlexNet was on two GTX 580 GPU cards, each of which only has 3G memory, while the modern v100 gpu card can have 16G or even 32G memory.  The problem set was then divided into 2 parts, half executing on GPU 1 & another half on GPU 2.
+
+P70
+VGGNet was a technique proposed for the ImageNet challenge of 2013. VGGNet didn’t win the ImageNet 2013 challenge but it is still used by many people because it was a simple architecture based on the AlexNet type architecture. VGGNet advocates the use of smaller filters, e.g., 3x3 convolutional filters.
+
+P71
+Receptive field is the region in the input space that a particular CNN's feature is looking at or be affected by.
+Here, we consider 3x3 convolutional filters in bottom left. For each neuron on the 2nd layer, it is connected with three nodes in the 1st layer. So for the neuron on the 2nd layer, its receptive field size is 3. Further we consider a neuron on the 3rd layer. With some simple math, you will find this neuron on the 3rd layer can be affected by five neurons on the 1st layer.
+This example informs us that stacking two 3x3 convolutinal layers is equivalent to using a single 5x5 convolutional layer. Similarly, stacking three 3x3 convolutinal layers is equivalent to using a single 7x7 convolutional layer
+If we use smaller filters, we can save the number of parameters in the network. As we have saved lots of parameters, we can stack more layers in the neural network design. And with more layers in the neural network, the depth of the new network can be easily increased. The increase of the depth of the neural network will then introduce more nonlinearity to the neural network, which is essential to deal with the complex data in the real world.
+
+P72
+The rule for network design here is quite simple. Also, the extracted features on FC7 can generalize well to other tasks. 
+
+P73
+With submissions like VGGNet ImageNet Challenge 2014 had many great submissions, but the winner of them all was Google’s GoogLeNet 
+
+P74
+GoogLeNet proposed something called the inception modules. If you look at the architecture, you can notice some skip connections in the network essentially forming a mini module and that module is repeated throughout the network. Google called this module an inception module. The details of the module are as this figure.
+
+P75
+The high level ideal in this inception module is to integrate different branches that are of different receptive fields sizes. By doing so, we can have the capability of extracting the multi scale features from the input. 
+Regarding the fusions of features from these different branches, we suggest the use of direct concatenation. We need to make sure the output from these different branches are of the same dimension by choosing the appropriate padding and stride values.  
+
+P76
+Another important idea in googlenet is the use of the 1x1 convolutional filters. A single 1x1 convolutional filter has 64 channels, which is consistent with that of the input feature map. The convolution result of a single 1x1 convolutional filter will be a 56x56 matrix, and then 32 1x1 convolutional filters will give us 64 such matrices, which forms a tensor of the dimension 56x56x32.
+With the help of 1x1 convolutional filter, we can preserve the spatial dimension. With a careful control of the number of 1x1 convolutional filters, we can realize the reduction of the feature map depth (number of channels).
+
+P77
+In this example, we plan to show the advantages of 1x1 convolutional filter on reducing the number of parameters. 
+In the left figure, the input feature map is of size 100x100x128, and the output feature map is the size 100x100x256. We want to achieve some transformation that preserves the spatial dimension while changing the depth dimension (from 128 to 256). This could be realized by 256 5x5 convolutional filters with stride 1 and pad 2. The total number of parameters in this transformation is therefore 128x5x5x256.
+In the right figure, we consider the use of 1x1 convolutional filters. In particular, with 32 1x1 convolutional filters, we can derive an intermediate feature map of the size 100x100x32. After that, we apply 256 5x5 convolutional filters further to produce the target out feature map of the size 100x100x256. In this two-stage process, the overall number of parameters is 128x1x1x32+32x5x5x256, which is significantly more efficient than the process in the left figure. 
+
+P78
+Given this advantage of 1x1 convolutional filter, in the inception module, we first have 1x1 convolution and then apply 3 × 3 or 5x5 convolution. The overall numbers of parameters in the inception module can be reduced.
+
+P79
+In googlenet, we can stack these inception modules to develop a deep neural network. In the last layer, we can use a global average pooling to make the prediction, so that you can further reduce the required number of parameters.  
+
+P80
+We observed the performance improvement from alexnet to vggnet and googlenet. There is a question that whether it's possible to further increase the number of layers in the neural network.
+
+P81
+If we simply stack more layers in the neural network, we can observe that the performance is not always improved as we have expected. 
+In this example, the network of 56 layers does not perform well either in the training or the test stage, which indicates that the failure is not about the overfitting issue. A hypothesis given here is that deeper models are harder to optimize.
+
+P82
+The solution in ResNet are here is to use network layers to fit a residual mapping instead of directly trying to fit a desired underlying mapping. 
+The intuition behind a network with residual blocks is that each layer is fed to the next layer of the network and also directly to the next layers skipping between a few layers in between.  The connection(gray arrow) is called skip connection or shortcut connection as it is bypassing one or more layers in between.
+Our residual block is overall trying to learn the true output, H(x). If you look closely at the image above, you will realize that since we have an identity connection coming from x, the layers are actually trying to learn the residual, F(x). So to summarize, the layers in a traditional network are learning the true output (H(x)), whereas the layers in a residual network are learning the residual (F(x)). Hence, the name: Residual Block.
+
+P83
+ResNet is a deep neural network by stacking many residual blocks. It used 3x3 convolutional filters a lot. We double the number of feature channels, while we cut in half the spatial dimensions.
+
+P84
+A Bottleneck Residual Block is a variant of the residual block that uses 1x1 convolutions to create a bottleneck. The use of a bottleneck reduces the number of parameters and matrix multiplications. The idea is to make residual blocks as thin as possible to increase depth and have less parameters. 
+
+P85
+On the right figure, with the shortcut, the deeper network with 34 layers can now achieve better performance than that of a network with 18-layer. 
+
+P86
+The feature extracted by ResNet can be well generalized to other tasks like the detection task, etc. 
+
+P88
+There are many variants of inception and residual modules.
+
+P89
+As we have mentioned before, two 3x3 convolutional layers could be equivalent to a single 5x5 convolutional layer. So we replace the 5x5 convolutional layer in Inception v1 as two 3x3 convolutional layers. 
+
+P90
+We have more generic factorization, e.g., factorizing the effect of a single 7x7 convolutional layer as the combination effect of a  7x1 convolutional layer and a  1x7 convolutional layer. Similar factorization goes with a single 3x3 convolutional layer.
+
+P91
+In inception v3, there are some other kinds of improvement, like the label smoothing.In a general multi class classification problem, a given training example is associated with a one hot vector as its label vector, where you only have one element that is non-zero and its index indicates the groundtruth category. 
+This kind of one-hot label vector may lead to potential problems in the model training. First, it may result in over-fitting: if the model learns to assign full probability to the ground-truth label for each training example, it is not guaranteed to generalize. Second, it reduces the ability of the model to adapt.  Intuitively, this happens because the model becomes too confident about its predictions. 
+The smoothed label vector is a mixture of the original ground-truth distribution q(k|x) and the fixed distribution u(k), with weights 1 − ε and ε, respectively. 
+
+P92
+In inception v4, we tend to have some brand new design of the inception module, as shown in this figure. 3 types of the inception modules have been developed. 
+
+P93
+The inception module also can be improved with the shortcut.
+
+P94
+Comparing the performance of different variations of inception-based architectures, we can see some top-1 and top-5 evaluation tell a very similar story. 
+
+P95
+The right shows the inception v3 module, where 1x1 conventional filters have been used a lot.
+The typical Inception module first looks at cross-channel correlations via a set of 1x1 convolutions, mapping the input data into 3 or 4 separate spaces that are smaller than the original input space, and then maps all correlations in these smaller 3D spaces, via regular 3x3 or 5x5 convolutions. 
+This observation naturally raises the question: what is the effect of the number of segments in the partition (and their size)? Would it be reasonable to make a much stronger hypothesis than the Inception hypothesis, and assume that cross-channel correlations and spatial correlations can be mapped completely separately? 
+
+P96
+An “extreme” version of an Inception module, based on this stronger hypothesis, would first use a 1x1 convolution to map cross-channel correlations, and would then separately map the spatial correlations of every output channel. 
+(relation with existing works) depthwise separable convolutions as usually implemented (e.g. in TensorFlow) perform first channel-wise spatial convolution and then perform 1x1 convolution, whereas Inception performs the 1x1 convolution first. 
+
+P97
+In the table, you can find that we increase the number of layers to gain more performance improvement. But when we include 50 more layers over Resnet-50, we can only have a 1% improvement in top-1.  If we further include 50 more layers over Restnet-101, we can only achieve 0.4% improvement. So the improvement brought by increasing the number of layers will be minimal eventually. 
+So the idea here is, why not we try to increase the width of the neural network? 
+
+P98
+The left two figures are residual block and its bottleneck version. For each residual block, we can include more convolutional layers per block. So we will have more feature planes here. The overall width of the new network can be increased. Residual networks already have batch normalization that provides a regularization effect, however it requires heavy data augmentation, which we would like to avoid, and it’s not always possible. We add a dropout layer into each residual block between convolutions as shown in the right and after ReLU to perturb batch normalization in the next residual block and prevent it from overfitting. 
+
+P99
+50-layer outperform 152-layer on ImageNet, thus showing that the main power of residual networks is in residual blocks, and not in extreme depth as claimed earlier. Also, wide residual networks are several times faster to train. 
+
+P100
+But what if we increase parallel paths instead of depth? This architectural designed is attempted in ResNeXt.
+
+P101
+There are two basic principles when designing the neural networks. 1) Stack building blocks of the same shape, e.g. VGG and ResNets. 2) Split-transform-merge strategy. In an Inception module, the input is split into a few lower-dimensional embeddings (by 1×1 convolutions), transformed by a set of specialized filters (3×3, 5×5, etc.), and merged by concatenation. 
+ResNeXt suggests repeating a building block that aggregates a set of transformations with the same topology. This simple architecture adopts VGG/ResNets’ strategy of repeating layers, while exploiting the split-transform-merge strategy in an easy, extensible way. 
+“cardinality” (the size of the set of transformations), increasing cardinality is able to improve classification accuracy. Moreover, increasing cardinality is more effective than going deeper or wider when we increase the capacity. 
+
+P102
+Such a design of the neural network in ResNeXt can be of a similar complexity with the original resnet.
+
+P103
+There are different options for the implementation of the aggregation process. For example in the left figure, we can independently run different paths and then merge their result together. In the middle, we have some earlier concatenation to merge these different paths and then do some further 1x1 transformation. In the right, we can resort to the group convolutions for the implementation by defining the ways to split the intermediate feature maps.  
+
+P104
+ResNets add a skip-connection that bypasses the non-linear transformations with an identity function. An advantage of ResNets is that the gradient can flow directly through the identity function from later layers to the earlier layers. DenseNet extends the idea of shortcut further, where each layer has direct access to the gradients from the loss function and the original input signal, leading to an implicit deep supervision. 
+
+P105
+In this figure, with nearly the same number of parameters, a densenet can achieve a better performance in terms of the validation error compared with the resnet.
